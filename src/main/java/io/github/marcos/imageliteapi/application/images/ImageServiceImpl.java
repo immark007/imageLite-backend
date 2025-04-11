@@ -1,12 +1,14 @@
 package io.github.marcos.imageliteapi.application.images;
 
 import io.github.marcos.imageliteapi.domain.entity.Image;
+import io.github.marcos.imageliteapi.domain.enums.ImageExtension;
 import io.github.marcos.imageliteapi.domain.service.ImageService;
 import io.github.marcos.imageliteapi.infra.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -22,5 +24,10 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public Optional<Image> findById(String id) {
         return imageRepository.findById(id);
+    }
+
+    @Override
+    public List<Image> search(ImageExtension extension, String query) {
+        return imageRepository.findByExtensionAndNameOrTagsLike(extension, query);
     }
 }
