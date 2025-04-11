@@ -1,6 +1,7 @@
 package io.github.marcos.imageliteapi.application.images;
 
 import io.github.marcos.imageliteapi.domain.entity.Image;
+import io.github.marcos.imageliteapi.domain.enums.ImageExtension;
 import io.github.marcos.imageliteapi.domain.service.ImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -13,6 +14,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/v1/images")
@@ -55,10 +57,25 @@ public class ImageController {
         return new ResponseEntity<>(image.getFile(), headers, HttpStatus.OK);
     }
 
+    @GetMapping()
+    public ResponseEntity<List<ImageDTO>> search(
+            @RequestParam(value = "extension", required = false, defaultValue = "") String extension,
+            @RequestParam(value = "query", required = false) String query){
+
+        var result = imageService.search(ImageExtension.ofName(extension), query);
+
+        var images = result.stream().map(image -> {
+            var url = buildImageUri(image);
+            return imageMapper.imageToDTO(image, url.toString());
+        }).collect(Collectors.toList());
+
+        return ResponseEntity.ok(images);
+    }
+
     private URI buildImageUri(Image image) {
         String imagePath = "/" + image.getId();
         return ServletUriComponentsBuilder
-                .fromCurrentRequest()
+                .fromCurrentRequestUri()
                 .path(imagePath)
                 .build()
                 .toUri();
